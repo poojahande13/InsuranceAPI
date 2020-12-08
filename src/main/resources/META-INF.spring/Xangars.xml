@@ -1,0 +1,377 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+       xmlns="http://www.springframework.org/schema/beans"
+       xsi:schemaLocation="http://www.springframework.org/schema/beans
+            http://www.springframework.org/schema/beans/spring-beans.xsd
+          http://camel.apache.org/schema/spring
+          http://camel.apache.org/schema/spring/camel-spring.xsd">
+
+    <bean id="PolicyInfo" class="com.Xangars.CustomerPolicyInfo" />
+
+    <bean id="EmailVerification" class="com.Xangars.EmailValidation"/>
+
+    <bean id = "MobileNumbervalidation" class="com.Xangars.MobileNumberValidation"/>
+
+    <bean id = "MobileNumUpdatation" class="com.Xangars.MobileNumberUpdation"/>
+
+    <bean id = "EmailAdressUpdatation" class="com.Xangars.EmailAddressUpdation"/>
+
+    <bean id = "PancardUpdatation" class="com.Xangars.PANCardUpdation"/>
+
+    <bean id = "WhatsappoptStep1Details" class="com.Xangars.WhatsappoptinStep1"/>
+
+    <bean id = "WhatsappoptStep2Details" class="com.Xangars.WhatsappoptinStep2"/>
+
+
+
+    <bean id="selfSigned" class="com.Xangars.AcceptSelfSignCertHttpClientConfigure"/>
+
+
+    <camelContext xmlns="http://camel.apache.org/schema/spring" id="mapper">
+        <!--using environment variable-->
+        <!--<propertyPlaceholder id="property" location="file://${env:CONFIG_LOCATION}/FileValidation.cnf"/>-->
+
+        <restConfiguration bindingMode="auto" component="jetty"   host="{{env:RESTAPI_HOST}}" port="{{env:RESTAPI_PORT}}"/>
+        <rest enableCORS="true" >
+
+            <get uri="/heartbeat" >
+                <to uri="direct:heartbeat"/>
+            </get>
+
+            <post uri="/CustomerPolicyInfo">
+                <to uri="direct:CustomerPolicyInfo"/>
+            </post>
+
+            <post uri ="/Emailverify">
+                <to uri = "direct:Emailverify"/>
+            </post>
+
+            <post uri = "/Mobilevalidation">
+                <to uri = "direct:Mobilevalidation"/>
+            </post>
+
+
+            <post uri = "/MobileUpdatation">
+                <to uri = "direct:MobileUpdatation"/>
+            </post>
+
+            <post uri = "/EmailUpdatation">
+                <to uri = "direct:EmailUpdatation"/>
+            </post>
+
+
+            <post uri = "/PanUpdatation">
+                <to uri = "direct:PanUpdatation"/>
+            </post>
+
+            <post uri = "/WhatsappoptStep1">
+                <to uri = "direct:WhatsappoptStep1"/>
+            </post>
+
+            <post uri = "/WhatsappoptStep2">
+                <to uri = "direct:WhatsappoptStep2"/>
+            </post>
+
+
+
+        </rest>
+
+        <route  id="getHeartBeatInfo">
+            <from uri="direct:heartbeat"/>
+            <setBody>
+                <simple> service is alive</simple>
+            </setBody>
+        </route>
+
+        <!-- calling Customer Policy Info API-->
+        <route  id="CustomerPolicyInfo" startupOrder="1">
+        <from uri="direct:CustomerPolicyInfo"/>
+            <convertBodyTo type="java.lang.String"/>
+            <log loggingLevel="INFO" message="Request Received with input Payload as follows:"/>
+            <convertBodyTo type="java.lang.String"/>
+
+            <log loggingLevel="INFO" message="Body : ${body} \r\n Headers : ${headers}"/>
+
+
+            <setProperty propertyName="inputData">
+                <simple>${body}</simple>
+            </setProperty>
+
+            <choice>
+            <when>
+                <simple>${exchange.getProperty(inputData)} == null </simple>
+                <log loggingLevel="INFO" message="Body recieved is null... terminating"/>
+                <stop/>
+            </when>
+            </choice>
+
+
+            <setBody>
+                <simple>${exchange.getProperty(inputData)}</simple>
+            </setBody>
+
+            <process ref="PolicyInfo"/>
+
+            <!--Calling Log API -->
+            <convertBodyTo type="java.lang.String"/>
+
+                       <!--<setHeader headerName="CamelHttpResponseCode">
+                <simple>200</simple>
+            </setHeader>-->
+            <log loggingLevel="INFO" message="Output Payload,  Body : ${body}, Headers : ${headers}"/>
+            <log loggingLevel="INFO" message="After calling Data Mapping Processor, Reached End of Xangars.xml"/>
+            <stop/>
+        </route>
+        <!-- calling Email verification API-->
+
+        <route  id="Emailverify" startupOrder="2">
+            <from uri="direct:Emailverify"/>
+            <convertBodyTo type="java.lang.String"/>
+            <log loggingLevel="INFO" message="Request Received with input Payload as follows:"/>
+            <convertBodyTo type="java.lang.String"/>
+
+            <log loggingLevel="INFO" message="Body : ${body} \r\n Headers : ${headers}"/>
+
+
+
+            <setProperty propertyName="inputData">
+                <simple>${body}</simple>
+            </setProperty>
+
+            <choice>
+                <when>
+                    <simple>${exchange.getProperty(inputData)} == null </simple>
+                    <log loggingLevel="INFO" message="Body recieved is null... terminating"/>
+                    <stop/>
+                </when>
+            </choice>
+
+
+            <setBody>
+                <simple>${exchange.getProperty(inputData)}</simple>
+            </setBody>
+
+            <process ref="EmailVerification"/>
+
+            <!--Calling Log API -->
+            <convertBodyTo type="java.lang.String"/>
+
+            <log loggingLevel="INFO" message="Output Payload,  Body : ${body}, Headers : ${headers}"/>
+            <log loggingLevel="INFO" message="After calling Data Mapping Processor, Reached End of Xangars.xml"/>
+            <stop/>
+        </route>
+
+        <!-- calling Mobile Number Validation API-->
+
+        <route  id="Mobilevalidation" startupOrder="3">
+            <from uri="direct:Mobilevalidation"/>
+            <convertBodyTo type="java.lang.String"/>
+            <log loggingLevel="INFO" message="Request Received with input Payload as follows:"/>
+            <convertBodyTo type="java.lang.String"/>
+
+            <log loggingLevel="INFO" message="Body : ${body} \r\n Headers : ${headers}"/>
+
+
+
+            <setProperty propertyName="inputData">
+                <simple>${body}</simple>
+            </setProperty>
+
+            <choice>
+                <when>
+                    <simple>${exchange.getProperty(inputData)} == null </simple>
+                    <log loggingLevel="INFO" message="Body recieved is null... terminating"/>
+                    <stop/>
+                </when>
+            </choice>
+
+
+            <setBody>
+                <simple>${exchange.getProperty(inputData)}</simple>
+            </setBody>
+
+            <process ref="MobileNumbervalidation"/>
+
+            <!--Calling Log API -->
+            <convertBodyTo type="java.lang.String"/>
+
+            <log loggingLevel="INFO" message="Output Payload,  Body : ${body}, Headers : ${headers}"/>
+            <log loggingLevel="INFO" message="After calling Data Mapping Processor, Reached End of Xangars.xml"/>
+            <stop/>
+        </route>
+
+        <!-- calling Mobile Number Updatation API-->
+
+        <route  id="MobileUpdatation" startupOrder="4">
+            <from uri="direct:MobileUpdatation"/>
+            <convertBodyTo type="java.lang.String"/>
+            <log loggingLevel="INFO" message="Request Received with input Payload as follows:"/>
+            <convertBodyTo type="java.lang.String"/>
+
+            <log loggingLevel="INFO" message="Body : ${body} \r\n Headers : ${headers}"/>
+
+
+
+            <setProperty propertyName="inputData">
+                <simple>${body}</simple>
+            </setProperty>
+
+            <choice>
+                <when>
+                    <simple>${exchange.getProperty(inputData)} == null </simple>
+                    <log loggingLevel="INFO" message="Body recieved is null... terminating"/>
+                    <stop/>
+                </when>
+            </choice>
+
+
+            <process ref="MobileNumUpdatation"/>
+
+            <!--Calling Log API -->
+            <convertBodyTo type="java.lang.String"/>
+
+            <log loggingLevel="INFO" message="Output Payload,  Body : ${body}, Headers : ${headers}"/>
+            <log loggingLevel="INFO" message="After calling Data Mapping Processor, Reached End of Xangars.xml"/>
+            <stop/>
+        </route>
+
+        <!-- calling Email Address Updatation API-->
+
+        <route  id="EmailUpdatation" startupOrder="5">
+            <from uri="direct:EmailUpdatation"/>
+            <convertBodyTo type="java.lang.String"/>
+            <log loggingLevel="INFO" message="Request Received with input Payload as follows:"/>
+            <convertBodyTo type="java.lang.String"/>
+
+            <log loggingLevel="INFO" message="Body : ${body} \r\n Headers : ${headers}"/>
+
+            <setProperty propertyName="inputData">
+                <simple>${body}</simple>
+            </setProperty>
+
+            <choice>
+                <when>
+                    <simple>${exchange.getProperty(inputData)} == null </simple>
+                    <log loggingLevel="INFO" message="Body recieved is null... terminating"/>
+                    <stop/>
+                </when>
+            </choice>
+
+            <process ref="EmailAdressUpdatation"/>
+
+            <!--Calling Log API -->
+            <convertBodyTo type="java.lang.String"/>
+            <log loggingLevel="INFO" message="Output Payload,  Body : ${body}, Headers : ${headers}"/>
+            <log loggingLevel="INFO" message="After calling Data Mapping Processor, Reached End of Xangars.xml"/>
+            <stop/>
+        </route>
+
+        <!-- calling PAN Card Updatation API-->
+        <route  id="PanUpdatation" startupOrder="6">
+        <from uri="direct:PanUpdatation"/>
+        <convertBodyTo type="java.lang.String"/>
+        <log loggingLevel="INFO" message="Request Received with input Payload as follows:"/>
+        <convertBodyTo type="java.lang.String"/>
+
+        <log loggingLevel="INFO" message="Body : ${body} \r\n Headers : ${headers}"/>
+
+
+
+        <setProperty propertyName="inputData">
+            <simple>${body}</simple>
+        </setProperty>
+
+        <choice>
+            <when>
+                <simple>${exchange.getProperty(inputData)} == null </simple>
+                <log loggingLevel="INFO" message="Body recieved is null... terminating"/>
+                <stop/>
+            </when>
+        </choice>
+
+
+        <process ref="PancardUpdatation"/>
+
+        <!--Calling Log API -->
+        <convertBodyTo type="java.lang.String"/>
+
+        <log loggingLevel="INFO" message="Output Payload,  Body : ${body}, Headers : ${headers}"/>
+        <log loggingLevel="INFO" message="After calling Data Mapping Processor, Reached End of Xangars.xml"/>
+        <stop/>
+    </route>
+
+        <!-- calling Whatsapp opt in Step1 API-->
+        <route  id="WhatsappoptStep1" startupOrder="7">
+            <from uri="direct:WhatsappoptStep1"/>
+            <convertBodyTo type="java.lang.String"/>
+            <log loggingLevel="INFO" message="Request Received with input Payload as follows:"/>
+            <convertBodyTo type="java.lang.String"/>
+
+            <log loggingLevel="INFO" message="Body : ${body} \r\n Headers : ${headers}"/>
+
+
+
+            <setProperty propertyName="inputData">
+                <simple>${body}</simple>
+            </setProperty>
+
+            <choice>
+                <when>
+                    <simple>${exchange.getProperty(inputData)} == null </simple>
+                    <log loggingLevel="INFO" message="Body recieved is null... terminating"/>
+                    <stop/>
+                </when>
+            </choice>
+
+            <process ref="WhatsappoptStep1Details"/>
+
+            <!--Calling Log API -->
+            <convertBodyTo type="java.lang.String"/>
+
+            <log loggingLevel="INFO" message="Output Payload,  Body : ${body}, Headers : ${headers}"/>
+            <log loggingLevel="INFO" message="After calling Data Mapping Processor, Reached End of Xangars.xml"/>
+            <stop/>
+        </route>
+
+
+        <!-- calling Whatsapp opt in Step2 API-->
+        <route  id="WhatsappoptStep2" startupOrder="8">
+            <from uri="direct:WhatsappoptStep2"/>
+            <convertBodyTo type="java.lang.String"/>
+            <log loggingLevel="INFO" message="Request Received with input Payload as follows:"/>
+            <convertBodyTo type="java.lang.String"/>
+
+            <log loggingLevel="INFO" message="Body : ${body} \r\n Headers : ${headers}"/>
+
+
+
+            <setProperty propertyName="inputData">
+                <simple>${body}</simple>
+            </setProperty>
+
+            <choice>
+                <when>
+                    <simple>${exchange.getProperty(inputData)} == null </simple>
+                    <log loggingLevel="INFO" message="Body recieved is null... terminating"/>
+                    <stop/>
+                </when>
+            </choice>
+
+
+
+
+
+            <process ref="WhatsappoptStep2Details"/>
+
+            <!--Calling Log API -->
+            <convertBodyTo type="java.lang.String"/>
+
+            <log loggingLevel="INFO" message="Output Payload,  Body : ${body}, Headers : ${headers}"/>
+            <log loggingLevel="INFO" message="After calling Data Mapping Processor, Reached End of Xangars.xml"/>
+            <stop/>
+        </route>
+
+
+    </camelContext>
+
+</beans>
